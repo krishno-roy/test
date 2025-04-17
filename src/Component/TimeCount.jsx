@@ -21,52 +21,19 @@ const CountdownApp = () => {
   const [endTime, setEndTime] = useState(null);
   const timerRef = useRef(null);
 
-  // Load settings from URL
+  // Load settings from short URL
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sharedTitle = params.get("title");
-    const sharedHour = params.get("hour");
-    const sharedMinute = params.get("minute");
-    const sharedDate = params.get("date");
-    const sharedBgColor = params.get("bgColor");
-    const sharedBgType = params.get("bgType");
-    const sharedBgGradient = params.get("bgGradient");
-    const sharedFontFamily = params.get("fontFamily");
-    const sharedTimeZone = params.get("timeZone");
+    const path = window.location.pathname.replace("/", "").toLowerCase();
 
-    if (sharedTitle) setTitle(sharedTitle);
-    if (sharedHour) setHour(sharedHour);
-    if (sharedMinute) setMinute(sharedMinute);
-    if (sharedDate) setDate(sharedDate);
-    if (sharedBgColor) setBgColor(sharedBgColor);
-    if (sharedBgType) setBgType(sharedBgType);
-    if (sharedBgGradient) setBgGradient(sharedBgGradient);
-    if (sharedFontFamily) setFontFamily(sharedFontFamily);
-    if (sharedTimeZone) setTimeZone(sharedTimeZone);
+    // Match formats like "4minute", "15minute"
+    const match = path.match(/^(\d+)minute$/);
+    if (match) {
+      const totalMinutes = parseInt(match[1]);
+      const now = moment().tz(timeZone);
+      const end = now.clone().add(totalMinutes, "minutes");
 
-    // Start countdown if shared
-    if (sharedHour && sharedMinute) {
-      const now = moment().tz(sharedTimeZone || timeZone);
-      let end;
-
-      if (sharedDate) {
-        const [year, month, day] = sharedDate.split("-").map(Number);
-        end = moment.tz(
-          { year, month: month - 1, day },
-          sharedTimeZone || timeZone
-        );
-        end
-          .add(parseInt(sharedHour), "hours")
-          .add(parseInt(sharedMinute), "minutes");
-      } else {
-        end = now
-          .clone()
-          .add(
-            parseInt(sharedHour) * 3600 + parseInt(sharedMinute) * 60,
-            "seconds"
-          );
-      }
-
+      setHour(String(Math.floor(totalMinutes / 60)).padStart(2, "0"));
+      setMinute(String(totalMinutes % 60).padStart(2, "0"));
       setEndTime(end);
       setTimeLeft(end.diff(now, "seconds"));
       setIsRunning(true);
@@ -111,21 +78,8 @@ const CountdownApp = () => {
   };
 
   const handleShare = () => {
-    const params = new URLSearchParams({
-      title,
-      hour,
-      minute,
-      date,
-      bgColor,
-      bgType,
-      bgGradient,
-      fontFamily,
-      timeZone,
-    });
-
-    const shareUrl = `${window.location.origin}${
-      window.location.pathname
-    }?${params.toString()}`;
+    const totalMinutes = parseInt(hour) * 60 + parseInt(minute);
+    const shareUrl = `${window.location.origin}/${totalMinutes}minute`;
     navigator.clipboard.writeText(shareUrl).then(() => {
       alert("লিংক কপি হয়েছে! এখন আপনি এটি শেয়ার করতে পারেন।");
     });
