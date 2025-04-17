@@ -59,31 +59,21 @@ const CountdownApp = () => {
     return { hrs, mins, secs };
   };
 
-  const handleStart = () => {
-    const totalSeconds = parseInt(hour) * 3600 + parseInt(minute) * 60;
-    const now = moment().tz(timeZone);
-    let end;
+ const handleShare = () => {
+   const totalMinutes = parseInt(hour || "0") * 60 + parseInt(minute || "0");
 
-    if (date) {
-      const [year, month, day] = date.split("-").map(Number);
-      end = moment.tz({ year, month: month - 1, day }, timeZone);
-      end.add(parseInt(hour), "hours").add(parseInt(minute), "minutes");
-    } else {
-      end = now.clone().add(totalSeconds, "seconds");
-    }
+   if (totalMinutes === 0) {
+     alert("Please set a time before sharing.");
+     return;
+   }
 
-    setEndTime(end);
-    setTimeLeft(end.diff(now, "seconds"));
-    setIsRunning(true);
-  };
+   const shortPath = `${totalMinutes}minute`;
+   const shareUrl = `${window.location.origin}/${shortPath}`;
 
-  const handleShare = () => {
-    const totalMinutes = parseInt(hour) * 60 + parseInt(minute);
-    const shareUrl = `${window.location.origin}/${totalMinutes}minute`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert("লিংক কপি হয়েছে! এখন আপনি এটি শেয়ার করতে পারেন।");
-    });
-  };
+   navigator.clipboard.writeText(shareUrl).then(() => {
+     alert(`লিংক কপি হয়েছে! আপনি এটি শেয়ার করতে পারেন:\n${shareUrl}`);
+   });
+ };
 
   const formatted = formatTime(timeLeft);
   const allTimeZones = moment.tz.names();
